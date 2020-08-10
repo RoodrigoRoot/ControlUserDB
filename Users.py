@@ -65,8 +65,7 @@ class UserMethods:
 class UserDB:    
     
     @classmethod
-    def save_user(cls, user):
-        con = connection_db()
+    def save_user(cls, user, con):
         cur = con.cursor()
         try:
             cur.execute("INSERT INTO users VALUES ('{}',  '{}', '{}', '{}'); ".                                                                        format(user.name,
@@ -85,9 +84,8 @@ class UserDB:
         pass
 
     @classmethod
-    def show_all_users(cls):
+    def show_all_users(cls, con):
         try:
-            con = connection_db()
             cur = con.cursor()
             cur.execute("SELECT * FROM USERS;")
             print(cur.fetchall())
