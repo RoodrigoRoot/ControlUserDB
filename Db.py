@@ -6,3 +6,7 @@ def connection_db():
         return con
     except Exception as e:
         print(e)
+
+def close_connection(con, cur):
+    con.close()
+    cur.close()
