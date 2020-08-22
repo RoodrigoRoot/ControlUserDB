@@ -1,8 +1,23 @@
 from Db import close_connection
-from Logger import logger
 from Logger import LoggerUserDB
 import os
 import time
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+
+file_handler = logging.FileHandler("user.log")
+file_handler.setLevel(logging.ERROR)
+file_handler.setFormatter(formatter)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 
 class User:
@@ -16,34 +31,34 @@ class User:
     def __str__(self):
         return "User"
 
-    def get_username(self):
+    def __get_username(self):
         return self.__username
 
-    def set_username(self, username):
+    def __set_username(self, username):
         self.__username = username
 
-    def get_name(self):
+    def __get_name(self):
         return self.__name
 
-    def set_name(self, name):
+    def __set_name(self, name):
         self.__name = name
 
-    def get_last_name(self):
+    def __get_last_name(self):
         return self.__last_name
 
-    def set_last_name(self, last_name):
+    def __set_last_name(self, last_name):
         self.__last_name = last_name
 
-    def get_phone(self):
+    def __get_phone(self):
         return self.__phone
 
-    def set_phone(self, phone):
+    def __set_phone(self, phone):
         self.__phone = phone
 
-    username = property(get_username, set_username)
-    name = property(get_name, set_name)
-    last_name = property(get_last_name, set_last_name)
-    phone = property(get_phone, set_phone)
+    username = property(__get_username, __set_username)
+    name = property(__get_name, __set_name)
+    last_name = property(__get_last_name, __set_last_name)
+    phone = property(__get_phone, __set_phone)
 
 
 class UserMethods:
@@ -68,18 +83,21 @@ class UserDB:
 
     @classmethod
     def save_user_db(cls, user, con):
+        
         cur = con.cursor()
         try:
-            cur.execute("INSERT INTO users (name, last_name, username, phone) VALUES ('{}',  '{}', '{}', '{}'); ".format(user.name,
+           cur.execute("INSERT INTO users (name, last_name, username, phone) VALUES ('{}',  '{}', '{}', '{}'); ".format(user.name,
                                                                                                                          user.last_name,
                                                                                                                          user.username,
                                                                                                                          user.phone
                                                                                                                          ))
-
-            con.commit()
-            close_connection(con, cur)
+           os.system("clear")
+           print("Se agregado al usuario")
+           time.sleep(1)
+           con.commit()
+           close_connection(con, cur)
         except Exception as e:
-            LoggerUserDB().write_error_user_db(e)
+            logger.error("UserDB.save_user_db: {}".format(e))                     
 
     @classmethod
     def search_user_db(cls, con):
@@ -114,7 +132,7 @@ class UserDB:
             cls.to_list_users(users)
             close_connection(con, cur)
         except Exception as e:
-            LoggerUserDB().write_error_user_db(e)
+            logger.error("UserDb.show_all_users_db:{}".format(e))
 
     @classmethod
     def to_list_users(cls, users):
@@ -134,13 +152,39 @@ class UserDB:
 
     @classmethod
     def delete_user_db(cls, con):
-        cur = con.cursor()
-        id_user = UserMethods.get_id()
-        sql = "DELETE FROM users WHERE codigo={}".format(id_user)
-        cur.execute(sql)
         try:
+            cur = con.cursor()
+            id_user = UserMethods.get_id()
+            sql = "DELETE FROM users WHERE codigo={};".format(id_user)
+            cur.execute(sql)
             con.commit()
+            close_connection(con, cur)
+            os.system("clear")
             print("Usuario Eliminado")
+            time.sleep(1)
 
         except Exception as e:
-            print("El usuario no puede eliminarse: {}".format(e))
+            logger.debug("El usuario no puede eliminarse {}".format(e))
+            logger.error("UserDB.delete_user_db: {}".format(e))
+        
+    @classmethod
+    def update_user_db(cls, con):
+        try:
+            id_user = UserMethods.get_id()
+            cur = con.cursor()
+            user=UserMethods.create_user()
+            sql = "UPDATE users SET name='{}', last_name='{}', username='{}', codigo='{}', phone='{}' WHERE codigo={};".format(
+                              user.name,
+                              user.last_name,
+                              user.username,
+                              id_user,
+                              user.phone,
+                              id_user
+                             )
+            os.system("clear")
+            print("El usuario ha sido actualizado")
+            con.commit()
+            close_connection(con, cur)
+            time.sleep(1)
+        except Exception as e:
+            logger.error("UserDB.update_user_db: {}".format(e))

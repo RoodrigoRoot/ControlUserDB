@@ -2,7 +2,6 @@ from Users import User, UserMethods, UserDB
 from Constans import *
 from Db import connection_db
 
-
 class Menu:
 
     @classmethod
@@ -10,11 +9,11 @@ class Menu:
         con = connection_db()
         if option == ADD:
             user = UserMethods.create_user()
-            UserDB.save_user(user, con)
+            UserDB.save_user_db(user, con)
         elif option == SEARCH:
-            UserDB.search_user(con)
+            UserDB.search_user_db(con)
         elif option == UPDATE:
-            pass
+            UserDB.update_user_db(con)
         elif option == DELETE:
             UserDB.delete_user_db(con)
         elif option == SHOW:
